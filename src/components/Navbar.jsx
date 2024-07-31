@@ -2,7 +2,6 @@ import { Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import logo from "../assets/logo.png";
 import { navItems } from "../constants";
-import { signOut, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { toast } from "react-toastify";
 
 
@@ -34,20 +33,6 @@ const Navbar = ({ user, setUser, toggleAuthModal }) => {
       });
   };
 
-  const handleGoogleSignIn = () => {
-    const provider = new GoogleAuthProvider();
-    signInWithPopup(auth, provider)
-      .then((result) => {
-        const user = result.user;
-        setUser(user);
-        toast.success(`Welcome, ${user.displayName || user.email}!`);
-      })
-      .catch((error) => {
-        console.error("Google sign-in error", error);
-        toast.error("Failed to sign in with Google. Please try again.");
-      });
-  };
-
   useEffect(() => {
     window.addEventListener('scroll', handleScroll);
     handleScroll(); // Call handleScroll initially to set the correct state
@@ -57,7 +42,7 @@ const Navbar = ({ user, setUser, toggleAuthModal }) => {
   return (
     <nav
       className={`sticky top-0 z-50 transition-all duration-300 backdrop-blur-lg border-b border-neutral-700/80 ${
-        scrolled ? 'py-7' : 'py-3' // Increase vertical padding on scroll
+        scrolled ? 'py-8' : 'py-3' // Increase vertical padding on scroll
       }`}
     >
       <div className="container px-4 mx-auto relative lg:text-sm">
@@ -97,7 +82,6 @@ const Navbar = ({ user, setUser, toggleAuthModal }) => {
             ) : (
               <a
                 href="#"
-                onClick={handleGoogleSignIn}
                 className="bg-gradient-to-r from-orange-400 to-orange-800 transition-transform duration-300 hover:scale-110 hover:text-orange-200 py-2 px-3 rounded-md"
               >
                 Create an account
