@@ -6,8 +6,9 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { ToastContainer, toast } from 'react-toastify'; // Import from react-toastify
 import 'react-toastify/dist/ReactToastify.css'; // Import the CSS for toast notifications
 
-const HeroSection = () => {
+const HeroSection = ({ user }) => { // Add user prop to manage authentication state
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [authCompleted, setAuthCompleted] = useState(false); // State to manage authentication completion
 
   useEffect(() => {
     // Show suggestions after a delay
@@ -19,18 +20,22 @@ const HeroSection = () => {
   const { scrollYProgress } = useScroll();
   const y = useTransform(scrollYProgress, [0, 1], [0, 10]); // Change the range based on desired effect
 
-  const handleStartClick = () => {
-    toast.info("Looks like you are not signed in. Please sign in to continue.", {
-      position: "top-right",
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-      theme: "dark",
-      
-    });
+  const handleButtonClick = async () => {
+    if (!user) {
+      toast.info("Looks like you are not signed in. Please sign in to continue.", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+    } else {
+      // User is signed in, redirect to documentation or other action
+      window.location.href = "https://ajprotech.com/blog/vr-ar/vr-development/"; // Replace with actual URL
+    }
   };
 
   return (
@@ -59,18 +64,10 @@ const HeroSection = () => {
       </p>
       <div className="flex justify-center my-10">
         <a
-          onClick={handleStartClick}
+          onClick={handleButtonClick}
           className="bg-gradient-to-r from-orange-500 to-orange-800 py-3 hover:scale-110 transition-transform duration-300 px-4 mx-3 hover:text-orange-200 rounded-md cursor-pointer"
         >
-          Start for free
-        </a>
-        <a 
-          href="https://ajprotech.com/blog/vr-ar/vr-development/" // Replace with actual URL
-          className="py-3 px-4 mx-3 rounded-md border hover:scale-110 transition-transform duration-300 hover:text-orange-300"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Documentation
+          {user ? "Documentation" : "Start for free"}
         </a>
       </div>
       <div className="flex mt-10 justify-center">
@@ -106,7 +103,7 @@ const HeroSection = () => {
           <h2 className="text-2xl font-semibold mb-4">
             Who Can Benefit from Virtual Reality?
           </h2>
-          <ul className="list-disc list-inside text-lg text-neutral-700">
+          <ul className="list-disc list-inside text-lg ">
             <li>
               <strong>Game Developers:</strong> Craft immersive, interactive worlds.
             </li>

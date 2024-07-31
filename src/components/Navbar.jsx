@@ -1,11 +1,12 @@
 import { Menu, X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import logo from "../assets/logo.png";
 import { navItems } from "../constants";
 import { toast } from "react-toastify";
+import { auth, googleProvider, signInWithPopup, signOut } from "./Firebase";
+import debounce from "lodash.debounce"; // Ensure you have lodash.debounce installed
 
-
-const Navbar = ({ user, setUser, toggleAuthModal }) => {
+const Navbar = ({ user, setUser }) => {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -32,6 +33,22 @@ const Navbar = ({ user, setUser, toggleAuthModal }) => {
         toast.error("Failed to log out. Please try again.");
       });
   };
+
+  const handleGoogleSignIn = useCallback(debounce(async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      setUser(user);
+      toast.success(`Welcome ${user.displayName}!`);
+    } catch (error) {
+      if (error.code === 'auth/cancelled-popup-request') {
+        toast.warn("Sign-in process was canceled.");
+      } else {
+        console.error("Google sign in error", error);
+        toast.error("Failed to sign in with Google. Please try again.");
+      }
+    }
+  }, 500), []);
 
   useEffect(() => {
     window.addEventListener('scroll', handleScroll);
@@ -82,6 +99,7 @@ const Navbar = ({ user, setUser, toggleAuthModal }) => {
             ) : (
               <a
                 href="#"
+                onClick={handleGoogleSignIn}
                 className="bg-gradient-to-r from-orange-400 to-orange-800 transition-transform duration-300 hover:scale-110 hover:text-orange-200 py-2 px-3 rounded-md"
               >
                 Create an account
