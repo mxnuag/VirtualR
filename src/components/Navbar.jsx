@@ -2,8 +2,11 @@ import { Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import logo from "../assets/logo.png";
 import { navItems } from "../constants";
+import { signOut, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { toast } from "react-toastify";
 
-const Navbar = () => {
+
+const Navbar = ({ user, setUser, toggleAuthModal }) => {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -17,6 +20,32 @@ const Navbar = () => {
 
   const handleScroll = () => {
     setScrolled(window.scrollY > 50); // Adjust this value as needed
+  };
+
+  const handleLogout = () => {
+    signOut(auth)
+      .then(() => {
+        setUser(null);
+        toast.success("Logged out successfully!");
+      })
+      .catch((error) => {
+        console.error("Sign out error", error);
+        toast.error("Failed to log out. Please try again.");
+      });
+  };
+
+  const handleGoogleSignIn = () => {
+    const provider = new GoogleAuthProvider();
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        const user = result.user;
+        setUser(user);
+        toast.success(`Welcome, ${user.displayName || user.email}!`);
+      })
+      .catch((error) => {
+        console.error("Google sign-in error", error);
+        toast.error("Failed to sign in with Google. Please try again.");
+      });
   };
 
   useEffect(() => {
@@ -54,12 +83,26 @@ const Navbar = () => {
             ))}
           </ul>
           <div className="hidden lg:flex justify-center space-x-12 items-center">
-            <a
-              href="#"
-              className="bg-gradient-to-r from-orange-400 to-orange-800 transition-transform duration-300 hover:scale-110 hover:text-orange-200 py-2 px-3 rounded-md"
-            >
-              Create an account
-            </a>
+            {user ? (
+              <div className="flex items-center space-x-4">
+                <img
+                  src={user.photoURL || "https://via.placeholder.com/40"}
+                  alt="Profile"
+                  className="rounded-full w-10 h-10"
+                  onClick={handleLogout}
+                  title="Click to logout"
+                />
+                <span className="text-white">{user.displayName || user.email}</span>
+              </div>
+            ) : (
+              <a
+                href="#"
+                onClick={handleGoogleSignIn}
+                className="bg-gradient-to-r from-orange-400 to-orange-800 transition-transform duration-300 hover:scale-110 hover:text-orange-200 py-2 px-3 rounded-md"
+              >
+                Create an account
+              </a>
+            )}
           </div>
           <div className="lg:hidden md:flex flex-col justify-end">
             <button onClick={toggleNavbar}>
@@ -82,6 +125,7 @@ const Navbar = () => {
             <div className="flex space-x-6">
               <a
                 href="#"
+                onClick={handleGoogleSignIn}
                 className="py-2 px-3 rounded-md bg-gradient-to-r from-orange-500 to-orange-800"
               >
                 Create an account

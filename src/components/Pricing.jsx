@@ -1,7 +1,44 @@
 import { CheckCircle2 } from "lucide-react";
 import { pricingOptions } from "../constants";
+import { motion, useAnimation } from "framer-motion";
+import { useEffect, useState, useRef } from "react";
 
 const Pricing = () => {
+
+  const controls = useAnimation();
+  // Animation variants
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 50 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+  };
+
+  const [visibleItems, setVisibleItems] = useState(
+    Array(pricingOptions.length).fill(false)
+  );
+  
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = document.querySelectorAll('.pricing-item');
+      sections.forEach((section) => {
+        const rect = section.getBoundingClientRect();
+        const inView = rect.top < window.innerHeight && rect.bottom >= 0;
+        if (inView) {
+          controls.start('visible');
+        } else {
+          controls.start('hidden');
+        }
+      });
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Initial check
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [controls]);
+
   return (
     <div className="mt-20">
       <h2 className="text-3xl sm:text-5xl lg:text-6xl text-center my-8 tracking-wide">
@@ -9,7 +46,13 @@ const Pricing = () => {
       </h2>
       <div className="flex flex-wrap">
         {pricingOptions.map((option, index) => (
-          <div key={index} className="w-full sm:w-1/2 lg:w-1/3 p-2">
+          <motion.div
+            key={index}
+            className="w-full sm:w-1/2 lg:w-1/3 p-2 pricing-item"
+            variants={fadeInUp}
+            initial="hidden"
+            animate={controls}
+          >
             <div className="p-10 border border-neutral-700 rounded-xl">
               <p className="text-4xl mb-8">
                 {option.title}
@@ -38,7 +81,7 @@ const Pricing = () => {
                 Subscribe
               </a>
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
     </div>

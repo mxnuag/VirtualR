@@ -1,6 +1,37 @@
 import { features } from "../constants";
+import { motion, useAnimation } from "framer-motion";
+import { useEffect } from "react";
 
 const FeatureSection = () => {
+  const controls = useAnimation();
+
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 50 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = document.querySelectorAll('.feature-item');
+      sections.forEach((section) => {
+        const rect = section.getBoundingClientRect();
+        const inView = rect.top < window.innerHeight && rect.bottom >= 0;
+        if (inView) {
+          controls.start('visible');
+        } else {
+          controls.start('hidden');
+        }
+      });
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Initial check
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [controls]);
+
   return (
     <div className="relative mt-20 border-b border-neutral-800 min-h-[800px]">
       <div className="text-center">
@@ -16,7 +47,13 @@ const FeatureSection = () => {
       </div>
       <div className="flex flex-wrap mt-10 lg:mt-20">
         {features.map((feature, index) => (
-          <div key={index} className="w-full sm:w-1/2 lg:w-1/3">
+          <motion.div
+            key={index}
+            className="w-full sm:w-1/2 lg:w-1/3 feature-item"
+            variants={fadeInUp}
+            initial="hidden"
+            animate={controls}
+          >
             <div className="flex">
               <div className="flex mx-6 h-10 w-10 p-2 bg-neutral-900 text-orange-700 justify-center items-center rounded-full">
                 {feature.icon}
@@ -28,7 +65,7 @@ const FeatureSection = () => {
                 </p>
               </div>
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
     </div>
