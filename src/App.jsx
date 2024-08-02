@@ -9,6 +9,8 @@ import Testimonials from "./components/Testimonials";
 import Preloader from "./components/Preloader";
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
+import { auth } from './components/Firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
 const App = () => {
   const [loading, setLoading] = useState(true);
@@ -37,39 +39,46 @@ const App = () => {
 
       gradientElement.animate(keyframes, timing); // Apply the animation
     }
-  }, []);
 
-  // Inline styles for the gradient background with light color
-  const gradientBackgroundStyle = {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    background: 'linear-gradient(45deg, rgba(0,0,0,0.8), rgba(34,34,34,0.8), rgba(255,255,255,0.2), rgba(34,34,34,0.8), rgba(0,0,0,0.8))',
-    backgroundSize: '400% 400%',
-    zIndex: -1, // Place behind other content
-    overflow: 'hidden'
-  };
+    // Listen for authentication state changes
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      if (user) {
+        toast.success(`Welcome back, ${user.displayName || user.email}!`, {
+          position: toast.POSITION.TOP_RIGHT,
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+        });
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   return (
     <>
-      <ToastContainer />
       {loading ? (
         <Preloader onLoaded={handlePreloaderLoaded} />
       ) : (
-        <div className="max-w-7xl mx-auto pt-20 px-6 transition-opacity duration-1000">
-          {/* Gradient Background */}
-          <div className="gradient-background" style={gradientBackgroundStyle} ref={gradientRef}></div>
-          <Navbar user={user} setUser={setUser} />
-          <HeroSection />
-          <FeatureSection />
-          <Workflow />
-          <Pricing />
-          <Testimonials />
-          <Footer />
-        </div>
+        <>
+          <div className="animate-gradient h-screen bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-700 fixed w-full" ref={gradientRef}></div>
+          <div className="relative z-10">
+            <Navbar user={user} setUser={setUser} />
+            <HeroSection user={user} />
+            <FeatureSection />
+            <Workflow />
+            <Pricing />
+            <Testimonials />
+            <Footer />
+          </div>
+        </>
       )}
+      <ToastContainer />
     </>
   );
 };

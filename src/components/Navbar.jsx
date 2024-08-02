@@ -1,10 +1,10 @@
+import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
 import logo from "../assets/logo.png";
 import { navItems } from "../constants";
 import { toast } from "react-toastify";
-import { auth, googleProvider, signInWithPopup, signOut } from "./Firebase";
-import debounce from "lodash.debounce"; // Ensure you have lodash.debounce installed
+import { auth, provider } from './Firebase';
+import { signInWithPopup, signOut } from 'firebase/auth';
 
 const Navbar = ({ user, setUser }) => {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -22,33 +22,58 @@ const Navbar = ({ user, setUser }) => {
     setScrolled(window.scrollY > 50); // Adjust this value as needed
   };
 
-  const handleLogout = () => {
-    signOut(auth)
-      .then(() => {
-        setUser(null);
-        toast.success("Logged out successfully!");
-      })
-      .catch((error) => {
-        console.error("Sign out error", error);
-        toast.error("Failed to log out. Please try again.");
+  const handleGoogleSignIn = async () => {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      setUser(result.user);
+      toast.success(`Welcome, ${result.user.displayName}!`, {
+        position: toast.POSITION.TOP_RIGHT,
+        className: 'welcome-toast',
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
       });
+    } catch (error) {
+      toast.error(`Error: ${error.message}`, {
+        position: toast.POSITION.TOP_RIGHT,
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+    }
   };
 
-  const handleGoogleSignIn = useCallback(debounce(async () => {
+  const handleLogout = async () => {
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
-      setUser(user);
-      toast.success(`Welcome ${user.displayName}!`);
+      await signOut(auth);
+      setUser(null);
+      toast.info('You have been logged out.', {
+        position: toast.POSITION.TOP_RIGHT,
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
     } catch (error) {
-      if (error.code === 'auth/cancelled-popup-request') {
-        toast.warn("Sign-in process was canceled.");
-      } else {
-        console.error("Google sign in error", error);
-        toast.error("Failed to sign in with Google. Please try again.");
-      }
+      toast.error(`Error: ${error.message}`, {
+        position: toast.POSITION.TOP_RIGHT,
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
     }
-  }, 500), []);
+  };
 
   useEffect(() => {
     window.addEventListener('scroll', handleScroll);
@@ -90,7 +115,7 @@ const Navbar = ({ user, setUser }) => {
                 <img
                   src={user.photoURL || "https://via.placeholder.com/40"}
                   alt="Profile"
-                  className="rounded-full w-10 h-10"
+                  className="rounded-full w-10 h-10 cursor-pointer"
                   onClick={handleLogout}
                   title="Click to logout"
                 />
@@ -125,13 +150,26 @@ const Navbar = ({ user, setUser }) => {
               ))}
             </ul>
             <div className="flex space-x-6">
-              <a
-                href="#"
-                onClick={handleGoogleSignIn}
-                className="py-2 px-3 rounded-md bg-gradient-to-r from-orange-500 to-orange-800"
-              >
-                Create an account
-              </a>
+              {user ? (
+                <div className="flex flex-col items-center space-y-4">
+                  <img
+                    src={user.photoURL || "https://via.placeholder.com/40"}
+                    alt="Profile"
+                    className="rounded-full w-10 h-10 cursor-pointer"
+                    onClick={handleLogout}
+                    title="Click to logout"
+                  />
+                  <span className="text-white">{user.displayName || user.email}</span>
+                </div>
+              ) : (
+                <a
+                  href="#"
+                  onClick={handleGoogleSignIn}
+                  className="py-2 px-3 rounded-md bg-gradient-to-r from-orange-500 to-orange-800"
+                >
+                  Create an account
+                </a>
+              )}
             </div>
           </div>
         )}

@@ -3,12 +3,11 @@ import video2 from "../assets/video2.mp4";
 import TypingEffect from 'react-typing-effect';
 import { useState, useEffect } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { ToastContainer, toast } from 'react-toastify'; // Import from react-toastify
+import { toast } from 'react-toastify'; // Import toast
 import 'react-toastify/dist/ReactToastify.css'; // Import the CSS for toast notifications
 
 const HeroSection = ({ user }) => { // Add user prop to manage authentication state
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [authCompleted, setAuthCompleted] = useState(false); // State to manage authentication completion
 
   useEffect(() => {
     // Show suggestions after a delay
@@ -122,7 +121,6 @@ const HeroSection = ({ user }) => { // Add user prop to manage authentication st
           </ul>
         </div>
       )}
-      <ToastContainer /> {/* Add ToastContainer here */}
     </div>
   );
 };
